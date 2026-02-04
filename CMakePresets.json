@@ -1,0 +1,47 @@
+{
+  "version": 3,
+  "configurePresets": [
+    {
+      "name": "base",
+      "hidden": true,
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/${presetName}",
+      "cacheVariables": {
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
+      }
+    },
+    {
+      "name": "native",
+      "displayName": "Native (PC)",
+      "description": "Build for PC (Unit Testing & Logic Dev)",
+      "inherits": "base",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "PLATFORM": "NATIVE"
+      }
+    },
+    {
+      "name": "avr",
+      "displayName": "AVR (Arduino Uno)",
+      "description": "Cross-compile for ATmega328p",
+      "inherits": "base",
+      "toolchainFile": "${sourceDir}/cmake/avr-gcc-toolchain.cmake",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "MinSizeRel",
+        "PLATFORM": "AVR",
+        "MCU": "atmega328p",
+        "ARDUINO_CLI_PATH": "C:/Program Files/Arduino CLI/arduino-cli.exe"
+      }
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "native",
+      "configurePreset": "native"
+    },
+    {
+      "name": "avr",
+      "configurePreset": "avr"
+    }
+  ]
+}

@@ -1,0 +1,42 @@
+* text=auto
+
+*.c     text diff=cpp
+*.cpp   text diff=cpp
+*.h     text diff=cpp
+*.hpp   text diff=cpp
+*.ino   text diff=cpp
+
+*.sh    text eol=lf
+
+*.bat   text eol=crlf
+*.cmd   text eol=crlf
+*.ps1   text eol=crlf
+
+CMakeLists.txt  text
+*.cmake         text
+CMakePresets.json text
+*.json          text
+*.yaml          text
+*.yml           text
+Makefile        text
+
+*.elf   binary
+*.hex   binary
+*.bin   binary
+*.map   binary
+*.exe   binary
+*.dll   binary
+*.so    binary
+*.a     binary
+*.lib   binary
+*.o     binary
+*.obj   binary
+*.pyc   binary
+
+*.md    text
+*.txt   text
+
+.gitattributes  export-ignore
+.gitignore      export-ignore
+.clang-format   export-ignore
+.clang-tidy     export-ignore

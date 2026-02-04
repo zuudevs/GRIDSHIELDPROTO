@@ -1,0 +1,47 @@
+---
+# Zuu's Clang-Format for GridShield
+# Based on Google Style but optimized for Embedded/Readability
+
+Language: Cpp
+BasedOnStyle: Google
+
+# --- Indentation (4 Spaces is King for Embedded) ---
+IndentWidth: 4
+TabWidth: 4
+UseTab: Never
+ContinuationIndentWidth: 4
+AccessModifierOffset: -4  # Public/Private sejajar sama class
+
+# --- Formatting Limits ---
+ColumnLimit: 100  # 80 itu kekecilan buat monitor jaman now
+
+# --- Includes ---
+SortIncludes: true
+IncludeBlocks: Regroup
+# Pisahkan header C++, C system, dan library lokal
+IncludeCategories:
+  - Regex:           '^<.*\.h>'
+    Priority:        1
+  - Regex:           '^<.*'
+    Priority:        2
+  - Regex:           '.*'
+    Priority:        3
+
+# --- Pointers & References ---
+# char* ptr (Left) vs char *ptr (Right)
+# Google prefer Left, tapi di C/Embedded sering Right. Aku set Left biar modern.
+PointerAlignment: Left
+
+# --- Braces & Wrapping ---
+BreakBeforeBraces: Attach # Kalo mau gaya Allman (turun baris), ganti jadi 'Allman'
+AllowShortFunctionsOnASingleLine: Empty
+AllowShortIfStatementsOnASingleLine: Never
+AllowShortLoopsOnASingleLine: Never
+
+# --- C++17 Specifics ---
+FixNamespaceComments: true
+ReflowComments: true
+AlignTrailingComments: true
+CompactNamespaces: false
+
+...

@@ -1,0 +1,49 @@
+---
+# Zuu's Clang-Tidy for GridShield
+# Checks: Performance (AVR), Safety (Bugprone), and Modern C++17
+
+Checks: >
+  -*,
+  bugprone-*,
+  cert-*,
+  cppcoreguidelines-*,
+  modernize-*,
+  performance-*,
+  readability-*,
+  -modernize-use-trailing-return-type,
+  -cppcoreguidelines-avoid-magic-numbers,
+  -readability-magic-numbers,
+  -cppcoreguidelines-pro-bounds-pointer-arithmetic,
+  -cppcoreguidelines-pro-type-vararg,
+  -hicpp-vararg,
+  -clang-analyzer-valist.Uninitialized,
+  -modernize-use-auto,
+  -google-readability-todo
+
+# Penjelasan Exclusions (Biar gak rewel):
+# - trailing-return-type: ribet nulis 'auto main() -> int' mulu.
+# - magic-numbers: di embedded banyak angka register 0xFF, masa dilarang?
+# - pointer-arithmetic: kita main hardware, pasti main pointer lah!
+# - vararg: printf butuh ini.
+
+# Treat warnings as errors? (Matikan dulu kalau mental belum kuat)
+WarningsAsErrors: ''
+
+# Cek header di folder include/ project kita aja, jangan cek library Arduino
+HeaderFilterRegex: 'src/.*|include/.*'
+
+# Format Style
+FormatStyle: file
+
+CheckOptions:
+  - key:             readability-identifier-naming.ClassCase
+    value:           CamelCase
+  - key:             readability-identifier-naming.FunctionCase
+    value:           camelBack
+  - key:             readability-identifier-naming.VariableCase
+    value:           lower_case
+  - key:             readability-identifier-naming.GlobalConstantCase
+    value:           UPPER_CASE
+  - key:             readability-function-cognitive-complexity.Threshold
+    value:           15
+...

@@ -1,0 +1,28 @@
+CompileFlags:
+  # 1. Tambahkan flag "Identity Crisis" (Biar dia lupa kalau dia di Windows)
+  Add: 
+    - --driver-mode=g++
+    - --target=avr
+    
+    # Definisi Wajib AVR
+    - -D__AVR__
+    - -D__AVR_ARCH__=5
+    - -D__AVR_ATmega328P__
+    
+    # [PENTING] Hapus identitas Windows/MSVC
+    # Ini biar Clangd gak nyasar baca header C:\Program Files\Microsoft Visual Studio...
+    - -U_MSC_VER
+    - -U_WIN32
+    - -U_WIN64
+    
+    # Bungkam warning gak penting
+    - -Wno-unknown-pragmas
+    - -Wno-unused-command-line-argument
+    - -Wno-all # Matikan semua warning, sisain error fatal aja biar hati tenang
+    
+  # 2. HAPUS flag-flag ribet (Versi Agresif)
+  Remove: 
+    - -mmcu=* - -f* # Hapus semua flag optimasi/fitur (-fno-exceptions, -ffunction-sections, dll)
+    - -Wl,* # Hapus semua flag Linker
+    - -std=* # Hapus standar C++ bawaan CMake, biar ikut default Clangd aja
+    - -O* # Hapus flag optimasi
