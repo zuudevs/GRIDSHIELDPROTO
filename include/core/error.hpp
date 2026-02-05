@@ -11,6 +11,8 @@
 
 #pragma once
 
+#pragma once
+
 #if defined(__AVR__)
   #include "../util/move.hpp"
 #else
@@ -18,29 +20,21 @@
 #endif
 
 #include <stdint.h>
-#include <SoftwareSerial.h>
-#include <new>
 
 namespace gridshield::core {
 
 enum class ErrorCode : uint16_t {
     Success = 0,
-    
-    // System errors (100-199)
     SystemNotInitialized = 100,
     SystemAlreadyInitialized = 101,
     SystemShutdown = 102,
     InvalidState = 103,
     ResourceExhausted = 104,
-    
-    // Hardware errors (200-299)
     HardwareFailure = 200,
     SensorReadFailure = 201,
     SensorNotCalibrated = 202,
     TamperDetected = 203,
     PowerLossDetected = 204,
-    
-    // Security errors (300-399)
     CryptoFailure = 300,
     AuthenticationFailed = 301,
     IntegrityViolation = 302,
@@ -48,26 +42,18 @@ enum class ErrorCode : uint16_t {
     SignatureInvalid = 304,
     EncryptionFailed = 305,
     DecryptionFailed = 306,
-    
-    // Network errors (400-499)
     NetworkTimeout = 400,
     NetworkDisconnected = 401,
     TransmissionFailed = 402,
     InvalidPacket = 403,
     BufferOverflow = 404,
-    
-    // Analytics errors (500-599)
     AnomalyDetected = 500,
     ProfileMismatch = 501,
     ThresholdExceeded = 502,
     DataInvalid = 503,
-    
-    // Configuration errors (600-699)
     InvalidParameter = 600,
     ConfigurationError = 601,
     CalibrationRequired = 602,
-    
-    // Generic errors (900-999)
     Unknown = 900,
     NotImplemented = 901,
     NotSupported = 902
@@ -86,8 +72,7 @@ public:
     void set_timestamp(uint32_t ts) noexcept { timestamp_ = ts; }
     
     constexpr bool is_critical() const noexcept {
-        return static_cast<uint16_t>(code_) >= 200 && 
-               static_cast<uint16_t>(code_) < 400;
+        return static_cast<uint16_t>(code_) >= 200 && static_cast<uint16_t>(code_) < 400;
     }
     
 private:
@@ -97,73 +82,38 @@ private:
     uint32_t timestamp_;
 };
 
+// SIMPLIFIED Result - direct member storage
 template<typename T>
 class Result {
 public:
-    // Removed constexpr because placement new is not constexpr-friendly in C++11/14
-    Result(T&& value) noexcept 
-        : has_value_(true), error_(ErrorCode::Success) {
-        new (&storage_.value) T(ZMOVE(value));
-    }
+    explicit Result(const T& value) noexcept 
+        : has_value_(true), error_(ErrorCode::Success), value_(value) {}
     
-    Result(const T& value) noexcept 
-        : has_value_(true), error_(ErrorCode::Success) {
-        new (&storage_.value) T(value);
-    }
-    
-    Result(ErrorContext error) noexcept 
-        : has_value_(false), error_(error) {}
-    
-    ~Result() {
-        if (has_value_) {
-            storage_.value.~T();
-        }
-    }
+    explicit Result(ErrorContext error) noexcept 
+        : has_value_(false), error_(error), value_() {}
     
     Result(const Result&) = delete;
+    Result& operator=(const Result&) = delete;
     
-    Result& operator=(const Result& other) {
-        if (this != &other) {
-            if (has_value_) {
-                storage_.value.~T();
-            }
-            has_value_ = other.has_value_;
-            error_ = other.error_;
-            if (has_value_) {
-                new (&storage_.value) T(other.storage_.value);
-            }
-        }
-        return *this;
-    }
-    
-    Result(Result&& other) noexcept : has_value_(other.has_value_), error_(other.error_) {
-        if (has_value_) {
-            new (&storage_.value) T(ZMOVE(other.storage_.value));
-        }
-    }
+    Result(Result&& other) noexcept 
+        : has_value_(other.has_value_), error_(other.error_), value_(ZMOVE(other.value_)) {}
     
     bool is_ok() const noexcept { return has_value_; }
     bool is_error() const noexcept { return !has_value_; }
     
-    // Removed constexpr and overloads causing ambiguity in older compilers
-    T& value() noexcept { return storage_.value; }
-    const T& value() const noexcept { return storage_.value; }
+    T& value() noexcept { return value_; }
+    const T& value() const noexcept { return value_; }
     
     ErrorContext error() const noexcept { return error_; }
     
-    T value_or(T&& default_value) const noexcept {
-        return has_value_ ? storage_.value : ZMOVE(default_value);
+    T value_or(const T& default_value) const noexcept {
+        return has_value_ ? value_ : default_value;
     }
     
 private:
-    union Storage {
-        T value;
-        Storage() {}
-        ~Storage() {}
-    } storage_;
-    
     bool has_value_;
     ErrorContext error_;
+    T value_;
 };
 
 template<>
@@ -172,9 +122,7 @@ public:
     constexpr Result() noexcept : error_(ErrorCode::Success) {}
     constexpr Result(ErrorContext error) noexcept : error_(error) {}
     
-    constexpr bool is_ok() const noexcept { 
-        return error_.code() == ErrorCode::Success; 
-    }
+    constexpr bool is_ok() const noexcept { return error_.code() == ErrorCode::Success; }
     constexpr bool is_error() const noexcept { return !is_ok(); }
     constexpr ErrorContext error() const noexcept { return error_; }
     
@@ -182,16 +130,6 @@ private:
     ErrorContext error_;
 };
 
-#define MAKE_ERROR(code) \
-    ::gridshield::core::ErrorContext((code), __LINE__, __FILE__)
-
-#define TRY(expr) \
-    ({ \
-        auto _result = (expr); \
-        if (_result.is_error()) { \
-            return _result.error(); \
-        } \
-        std::move(_result.value()); \
-    })
+#define MAKE_ERROR(code) ::gridshield::core::ErrorContext((code), __LINE__, __FILE__)
 
 } // namespace gridshield::core
